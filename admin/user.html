@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
-
+    <script src="./libs/http.js"></script>
+    <!-- 引入bootstrap的js文件 -->
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -68,6 +70,106 @@
             </form>
         </div>
     </div>
+    <!-- 使用bootstrap的模态框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script>
+        $(function () {
+            // 一进入就获取管理员信息
+            $.ajax({
+                type: 'get',
+                url: BigNew.user_detail,
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        // $('input.username').val(backData.data.username)
+                        // $('input.nickname').val(backData.data.nickname)
+                        // $('input.email').val(backData.data.email)
+                        // $('input.password').val(backData.data.password)
+                        // 简化写法,遍历backData.data
+                        for (let key in backData.data) {
+                            $('input.' + key).val(backData.data[key])
+                        }
+                        $('img.user_pic').attr('src', backData.data.userPic)
+                    }
+                }
+            })
+
+
+            // 个人中心信息修改:图片预览
+            $('#exampleInputFile').on('change', function () {
+                // 获取用户选择的图片
+                let file1 = this.files[0]
+                // 设置url
+                let url = URL.createObjectURL(file1)
+                // 设置给img
+                $('img.user_pic').attr('src', url)
+            })
+
+            // 完成个人中心修改
+            $('.btn-edit').on('click', function (e) {
+                //阻止默认跳转
+                e.preventDefault()
+                // 获取form表单
+                let form1 = document.querySelector('#form')
+                // console.log(form1);
+
+                // 创建formData对象
+                let fd = new FormData(form1)
+                //发送ajax请求修改个人信息
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.user_edit,
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        console.log(backData);
+                        if (backData.code == 200) {
+                            $('.modal-body').text('修改成功');
+                            $('#myModal').modal();
+                            $('#myModal').on('hidden.bs.modal', function (e) {
+                                // 第一种方法,刷新页面
+                                // parent.window.location.reload()
+                                // 第二种方法,获取管理员信息重新渲染
+                                $.ajax({
+                                    type: 'get',
+                                    url: window.BigNew.user_info,
+                                    success: function (backData) {
+                                        // console.log(backData);
+
+                                        // 给父页面的个人信息设置新的值
+                                        parent.$('.user_info>img').attr('src', backData.data.userPic)
+                                        parent.$('.user_info>span>i').text(backData.data.nickname)
+                                        parent.$('.user_center_link>img').attr('src', backData.data.userPic)
+                                    }
+                                })
+                            })
+                        }
+                    }
+                })
+            })
+
+        })
+    </script>
 </body>
 
 </html>
