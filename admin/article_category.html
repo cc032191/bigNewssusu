@@ -66,14 +66,14 @@
                 <div class="modal-body">
                     <form>
                         <!-- 隐藏域 -->
-                        <input type="hidden" name="" id="category_id">
+                        <input type="hidden" name="id" id="category_id">
                         <div class="form-group">
                             <label for="recipient-name" class="control-label">名称:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                            <input type="text" name="name" class="form-control" id="recipient-name">
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">Slug:</label>
-                            <input class="form-control" id="message-text"></input>
+                            <input name="slug" class="form-control" id="message-text"></input>
                         </div>
                     </form>
                 </div>
@@ -143,10 +143,10 @@
             })
 
             // 给模态框中的取消按钮设置点击事件
-            // $('.btn-cancel').on('click', function () {
-            //     // 原生js中的reset()方法可把表单中的元素重置为它们的默认值
-            //     $("#myModal form")[0].reset();
-            // })
+            $('.btn-cancel').on('click', function () {
+                // 原生js中的reset()方法可把表单中的元素重置为它们的默认值
+                $("#myModal form")[0].reset();
+            })
 
             // 给模态框中的新增跟编辑设置点击事件
             $('.btn-queren').on('click', function () {
@@ -178,18 +178,21 @@
                 } else {
                     // 完成编辑
                     // 取到id,名称,Slug
-                    let category_id = $('#category_id').val().trim()
-                    let categoreName = $('#recipient-name').val().trim()
-                    let categoreSlug = $('#message-text').val().trim()
+                    // let category_id = $('#category_id').val().trim()
+                    // let categoreName = $('#recipient-name').val().trim()
+                    // let categoreSlug = $('#message-text').val().trim()
+                    //jQuery里面的serialize()方法可以帮我们获取到form表单里面的带有name属性的值
+                    let data = $('#myModal form').serialize()
                     // 发送ajax请求
                     $.ajax({
                         type: 'post',
                         url: BigNew.category_edit,
-                        data: {
-                            id: category_id,
-                            name: categoreName,
-                            slug: categoreSlug
-                        },
+                        // data: {
+                        //     id: category_id,
+                        //     name: categoreName,
+                        //     slug: categoreSlug
+                        // },
+                        data: data,
                         success: function (backData) {
                             if (backData.code == 200) {
                                 // 隐藏模态框
@@ -206,9 +209,12 @@
             // 删除分类
             // 动态添加
             $('tbody').on('click', '.btn-delete', function () {
+                let that = $(this)
                 if (confirm('确定删除?')) {
                     // 获取id
                     let id = $(this).attr('data-id')
+                    // console.log($(this));
+
                     // 发送ajax请求删除
                     $.ajax({
                         type: 'post',
@@ -220,7 +226,10 @@
                             // console.log(backData);
                             if (backData.code == 204) {
                                 alert('删除成功')
+                                // 第一种:重新渲染
                                 getData()
+                                // 第二种:直接删除tr
+                                // that.parent().parent().parent().remove(that.parent().parent())
                             }
                         }
                     })

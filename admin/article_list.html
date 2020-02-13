@@ -13,6 +13,7 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <script src="./libs/http.js"></script>
 </head>
 
 <body>
@@ -72,6 +73,31 @@
             </div>
         </div>
     </div>
+
+
+    <!-- 准备一个文章类别模板 -->
+    <script id="category_temp" type="text/html">
+        
+        
+    </script>
+
+
+    <script>
+        $(function () {
+            // 发送ajax请求,获取所有的文章类别,通过模板渲染到下拉菜单中
+            $.ajax({
+                type: 'get',
+                url: BigNew.category_list,
+                success: function (backData) {
+                    // console.log(backData);
+                    if (backData.code == 200) {
+                        // 调用模板引擎的核心方法
+                        
+                    }
+                }
+            })
+        })
+    </script>
 </body>
 
 </html>
