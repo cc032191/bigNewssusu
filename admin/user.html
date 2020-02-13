@@ -46,7 +46,7 @@
                     <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
                     <div class="col-sm-10">
                         <img src="images/2.jpg" alt="" class="user_pic">
-                        <input style="display: block" name="userPic" type="file" id="exampleInputFile">
+                        <input style="display: none" name="userPic" type="file" id="exampleInputFile">
                         <!-- 给label标签的for属性赋值,值是input标签的id,那这样的话点击label就相当于点击了input -->
                         <br>
                         <label for="exampleInputFile">
@@ -144,20 +144,24 @@
                     success: function (backData) {
                         console.log(backData);
                         if (backData.code == 200) {
-                            alert('修改成功')
-                            // 第一种方法,刷新页面
-                            // parent.window.location.reload()
-                            // 第二种方法,获取管理员信息重新渲染
-                            $.ajax({
-                                type: 'get',
-                                url: window.BigNew.user_info,
-                                success: function (backData) {
-                                    // console.log(backData);
-                                    // 给父页面的个人信息设置新的值
-                                    parent.$('.user_info>img').attr('src', backData.data.userPic)
-                                    parent.$('.user_info>span>i').text(backData.data.nickname)
-                                    parent.$('.user_center_link>img').attr('src', backData.data.userPic)
-                                }
+                            // alert('修改成功')
+                            $('.modal-body').text('修改成功');
+                            $('#myModal').modal();
+                            $('#myModal').on('hidden.bs.modal', function (e) {
+                                // 第一种方法,刷新页面
+                                // parent.window.location.reload()
+                                // 第二种方法,获取管理员信息重新渲染
+                                $.ajax({
+                                    type: 'get',
+                                    url: window.BigNew.user_info,
+                                    success: function (backData) {
+                                        // console.log(backData);
+                                        // 给父页面的个人信息设置新的值
+                                        parent.$('.user_info>img').attr('src', backData.data.userPic)
+                                        parent.$('.user_info>span>i').text(backData.data.nickname)
+                                        parent.$('.user_center_link>img').attr('src', backData.data.userPic)
+                                    }
+                                })
                             })
                         }
                     }

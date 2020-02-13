@@ -131,36 +131,39 @@
                     window.location.href = './login.html'
                 })
             })
+
+
+            // 给左侧的一级导航栏设置点击事件
+            $('div>.level01').on('click', function () {
+                // 当前点击的添加active类,其余的移除active类(排他思想)
+                $(this).addClass('active').siblings('div').removeClass('active')
+                // console.log($(this).index());
+                // 当前点击的如果是文章管理,就出现二级菜单
+                if ($(this).index() == 1) {
+                    $('ul.level02').slideToggle()
+
+                    // 设置箭头的旋转
+                    $(this).find('b').toggleClass('rotate0')
+                    // 默认选中第一个二级菜单
+                    // $('ul.level02>li:eq(0)').trigger('click');
+                    // console.log($('ul.level02>li:eq(0)'));
+
+                    $('#one_a>a')[0].click()
+                    //jQuery对象的click()事件,他只会触发js单击事件,而不会触发a标签的默认跳转事件.
+                    //dom对象的click()事件,他不仅会触发js单击事件,还会触发a标签的默认跳转事件
+
+                }
+            })
+
+            // 给二级菜单设置点击事件
+            $('.level02>li').on('click', function () {
+                // 当前点击的添加active类,其余的移除active类(排他思想)
+                $(this).addClass('active').siblings('li').removeClass('active')
+            })
         })
 
 
-        // 给左侧的一级导航栏设置点击事件
-        $('div>.level01').on('click', function () {
-            // 当前点击的添加active类,其余的移除active类(排他思想)
-            $(this).addClass('active').siblings('div').removeClass('active')
-            // console.log($(this).index());
-            // 当前点击的如果是文章管理,就出现二级菜单
-            if ($(this).index() == 1) {
-                $('ul.level02').slideToggle()
 
-                // 设置箭头的旋转
-                $(this).find('b').toggleClass('rotate0')
-                // 默认选中第一个二级菜单
-                // $('ul.level02>li:eq(0)').trigger('click');
-                // console.log($('ul.level02>li:eq(0)'));
-                
-                $('#one_a>a')[0].click()
-                //jQuery对象的click()事件,他只会触发js单击事件,而不会触发a标签的默认跳转事件.
-                //dom对象的click()事件,他不仅会触发js单击事件,还会触发a标签的默认跳转事件
-
-            }
-        })
-
-        // 给二级菜单设置点击事件
-        $('.level02>li').on('click', function () {
-            // 当前点击的添加active类,其余的移除active类(排他思想)
-            $(this).addClass('active').siblings('li').removeClass('active')
-        })
 
 
 
