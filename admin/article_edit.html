@@ -5,16 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>文章列表</title>
+    <title>文章编辑</title>
     <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
+    <!-- 引入日期插件 -->
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <script src="./libs/jedate/js/jedate.js"></script>
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
     <script src="./libs/http.js"></script>
+    <!-- 引入富文本编辑器 -->
+    <script src="./libs/wangEditor.min.js"></script>
 </head>
 
 <body>
@@ -51,12 +57,18 @@
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
+                    <div class="col-sm-4 jeinpbox">
+                        <!-- 日历插件模板 -->
+                        <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                        <div class="icons jebtns" onclick="jeDate('#testico',{trigger:false,format: 'YYYY-MM-DD'})">
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-8" id="editor">
+                        <!-- 富文本编辑器结构 -->
+                        <p>欢迎使用 <b>wangEditor</b> 富文本编辑器</p>
                     </div>
                 </div>
                 <div class="form-group">
@@ -69,9 +81,66 @@
         </div>
     </div>
 
+    <!-- 文章类别模板 -->
+    <script id="art_cate_temp" type="text/html">
+        {{each data v}}
+             <option value={{v.id}}>{{v.name}}</option>
+        {{/each}}
+    </script>
+
 
     <script>
-        $(function(){
+        // 入口函数
+        $(function () {
+            //  预览图制作
+            // 找到选择图片按钮
+            $('#inputCover').on('change', function () {
+                // 获取用户输入的图片
+                let file1 = this.files[0]//转换dom元素
+                // 创建url地址
+                let url = URL.createObjectURL(file1)
+                // 设置给img
+                $('.article_cover').attr('src', url)
+            })
+
+            // 获取所有的文章类别
+            $.ajax({
+                type: 'get',
+                url: BigNew.category_list,
+                success: function (backData) {
+                    // console.log(backData);
+                    if (backData.code == 200) {
+                        // 调用模板引擎的核心方法
+                        let resHtml = template('art_cate_temp', backData)
+                        // 显示在下拉菜单中
+                        $('.form-control').html(resHtml)
+                    }
+
+                }
+            })
+            // 编辑日历插件
+            jeDate("#testico", {
+                zIndex: 2099,
+                isinitVal: true,
+                festival: false,
+                format: 'YYYY-MM-DD',
+                minDate: "2014-09-19 00:00:00"
+            });
+
+            // 富文本编辑器
+            var E = window.wangEditor
+            var editor = new E('#editor')
+            // 或者 var editor = new E( document.getElementById('editor') )
+            editor.create()
+
+
+
+
+
+
+
+
+
 
         })
     </script>
