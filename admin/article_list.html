@@ -16,6 +16,7 @@
     <script src="./libs/http.js"></script>
     <!-- 导入分页插件 -->
     <script src="./libs/jquery.twbsPagination.js"></script>
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -72,6 +73,9 @@
                 </tbody>
             </table>
             <div class="row text-center">
+                <!-- 分页插件结构 -->
+                <ul id="pagination-demo" class="pagination-sm"></ul>
+                <p>没有数据!</p>
             </div>
         </div>
     </div>
@@ -122,24 +126,194 @@
 
 
             // 一进入页面就将所有文章显示在文章列表
-            $.ajax({
-                type: 'get',
-                url: BigNew.article_query,
-                data: {
-                    type: $('#selCategory').val().trim(),//文章类型id，可以为空，为空返回所有类型文章
-                    state: $('#selStatus').val().trim(),//文章状态，草稿 ，已发布,为空返回所有状态文章
-                    page: 1, //当前页，为空返回第1页
-                    perpage: 6//每页显示条数，为空默认每页6条
-                },
-                success: function (backData) {
-                    if (backData.code == 200) {
-                        //  调用模版引擎的核心方法渲染到页面上面
-                        let resHtml = template('arti_list', backData)
-                        $('tbody').html(resHtml)
-                    }
+            // $.ajax({
+            //     type: 'get',
+            //     url: BigNew.article_query,
+            //     data: {
+            //         type: $('#selCategory').val().trim(),//文章类型id，可以为空，为空返回所有类型文章
+            //         state: $('#selStatus').val().trim(),//文章状态，草稿 ，已发布,为空返回所有状态文章
+            //         page: 1, //当前页，为空返回第1页
+            //         perpage: 6//每页显示条数，为空默认每页6条
+            //     },
+            //     success: function (backData) {
+            //         if (backData.code == 200) {
+            //             //  调用模版引擎的核心方法渲染到页面上面
+            //             let resHtml = template('arti_list', backData)
+            //             $('tbody').html(resHtml)
+            //             // 根据成功后的数据利用分页插件生成分页结构
+            //             $('#pagination-demo').twbsPagination({
+            //                 totalPages: backData.data.totalPage,
+            //                 visiblePages: 7,
+            //                 first: '首页',
+            //                 prev: '上一页',
+            //                 next: '下一页',
+            //                 last: '尾页',
+            //                 onPageClick: function (event, page) {
+            //                     $.ajax({
+            //                         type: 'get',
+            //                         url: BigNew.article_query,
+            //                         data: {
+            //                             type: $('#selCategory').val().trim(),//文章类型id，可以为空，为空返回所有类型文章
+            //                             state: $('#selStatus').val().trim(),//文章状态，草稿 ，已发布,为空返回所有状态文章
+            //                             page: page, //当前页，为空返回第1页
+            //                             perpage: 6//每页显示条数，为空默认每页6条
+            //                         },
+            //                         success: function (backData) {
+            //                             if (backData.code == 200) {
+            //                                 //  调用模版引擎的核心方法渲染到页面上面
+            //                                 let resHtml = template('arti_list', backData)
+            //                                 $('tbody').html(resHtml)
+            //                             }
+            //                         }
+            //                     })
+            //                 }
+            //             });
+            //         }
+            //     }
+            // })
 
+            // // 修改筛选条件,获取需要的文章,需要重新加载插件
+            // $('#btnSearch').on('click', function (e) {
+            //     // 阻止默认跳转
+            //     e.preventDefault()
+            //     // 发送ajax请求,获取文章列表
+            //     $.ajax({
+            //         type: 'get',
+            //         url: BigNew.article_query,
+            //         data: {
+            //             type: $('#selCategory').val().trim(),//文章类型id，可以为空，为空返回所有类型文章
+            //             state: $('#selStatus').val().trim(),//文章状态，草稿 ，已发布,为空返回所有状态文章
+            //             page: 1, //当前页，为空返回第1页
+            //             perpage: 6//每页显示条数，为空默认每页6条
+            //         },
+            //         success: function (backData) {
+            //             if (backData.code == 200) {
+            //                 //  调用模版引擎的核心方法渲染到页面上面
+            //                 let resHtml = template('arti_list', backData)
+            //                 $('tbody').html(resHtml)
+            //                 // 根据成功后的数据利用分页插件生成分页结构
+            //                 // 改变了筛选条件,总页数发生变化 根据重新生成的数据,重新生成分页结构
+            //                 $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, 1)
+            //             }
+            //         }
+            //     })
+
+            // })
+
+
+
+
+
+
+            //利用回调函数封装该方法
+            // 声明一个变量mypage表示当前点击的页码
+            let mypage = 1
+            //----------------------------------------------------------------------------------------------------------
+            //发送ajax请求封装为一个getData函数
+            function getData(mypage, callback) {
+                $.ajax({
+                    type: 'get',
+                    url: BigNew.article_query,
+                    data: {
+                        type: $('#selCategory').val().trim(),//文章类型,为空返回所有类型文章
+                        state: $('#selStatus').val().trim(),//文章状态，草稿 ，已发布,为空返回所有状态文章
+                        page: mypage, //当前页数
+                        perpage: 6//每页显示条数，为空默认每页6条
+                    },
+                    success: function (backData) {
+                        if (backData.code == 200) {
+                            //  调用模版引擎的核心方法渲染到页面上面
+                            let resHtml = template('arti_list', backData)
+                            $('tbody').html(resHtml)
+                            // 分页插件
+                            // 有数据就显示分页.没有就隐藏
+                            if (callback != null && backData.data.data.length != 0) {
+                                $('#pagination-demo').show()
+                                $('#pagination-demo').next().hide()
+                                callback(backData)
+                            } else if (backData.data.data.length == 0 && mypage == 1) {
+                                $('#pagination-demo').hide()
+                                $('#pagination-demo').next().show()
+                            } else if (backData.data.totalPage == mypage - 1 && backData.data.data.length == 0) {
+                                mypage -= 1;
+                                $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, mypage)
+                            }
+
+                        }
+                    }
+                })
+            }
+            // 一进入页面就将所有文章显示在文章列表
+            getData(1, function (backData) {
+                $('#pagination-demo').twbsPagination({
+                    totalPages: backData.data.totalPage,//页数
+                    visiblePages: 7,//可见页数上限
+                    first: '首页',
+                    prev: '上一页',
+                    next: '下一页',
+                    last: '尾页',
+                    onPageClick: function (event, page) {
+                        // 当前点击的页码赋值给mypage
+                        mypage = page
+                        getData(page, null)
+                    }
+                });
+
+            })
+            // 修改筛选条件,获取需要的文章,需要重新加载插件
+            $('#btnSearch').on('click', function (e) {
+                // 阻止默认跳转
+                e.preventDefault()
+                // 调用getData()方法,重新生成文章列表
+                getData(1, function (backData) {
+                    // 改变了筛选条件,总页数发生变化 根据重新生成的数据,重新生成分页结构
+                    $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, 1)
+                })
+            })
+
+            // 删除功能,委托注册点击事件
+            $('table>tbody').on('click', '.delete', function () {
+                if (confirm('确认删除?')) {
+                    // 获取点击的id,通过id删除
+                    let id = $(this).attr('data-id')
+                    // console.log(id);
+                    // 发送ajax请求,删除文章
+                    $.ajax({
+                        type: 'post',
+                        url: BigNew.article_delete,
+                        data: {
+                            id: id
+                        },
+                        success: function (backData) {
+                            // console.log(backData);
+                            if (backData.code == 204) {
+                                alert('删除成功')
+                                // 页面刷新
+                                // window.location.reload();
+                                getData(mypage, function (backData) {
+                                    //改变了筛选条件,总页数发生变化 根据重新生成的数据,重新生成分页结构
+                                    $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, mypage)
+                                    // if (backData.data.totalPage == mypage || mypage == 1) {
+                                    //     // console.log(backData.data.totalPage);
+                                    //     $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, mypage)
+                                    // } else {
+                                    //     $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, mypage - 1)
+                                    // }
+                                    // if (backData.data.totalPage == mypage - 1 && mypage != 1) {
+                                    //     mypage--
+                                    // }
+                                    // $('#pagination-demo').twbsPagination('changeTotalPages', backData.data.totalPage, mypage)
+                                })
+                            }
+                        }
+                    })
                 }
             })
+
+
+
+
+
         })
     </script>
 </body>
