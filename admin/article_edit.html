@@ -58,9 +58,10 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
                     <div class="col-sm-4 jeinpbox">
-                        <!-- 日历插件模板 -->
-                        <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
-                        <div class="icons jebtns" onclick="jeDate('#testico',{trigger:false,format: 'YYYY-MM-DD'})">
+                        <!-- 日历插件模板,FormData需要添加name属性 -->
+                        <input type="text" name="date" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                        <div class="icons jebtns"
+                            onclick="jeDate('#testico',{trigger:false,format: 'YYYY-MM-DD',zIndex:22099})">
                         </div>
                     </div>
                 </div>
@@ -92,17 +93,6 @@
     <script>
         // 入口函数
         $(function () {
-            //  预览图制作
-            // 找到选择图片按钮
-            $('#inputCover').on('change', function () {
-                // 获取用户输入的图片
-                let file1 = this.files[0]//转换dom元素
-                // 创建url地址
-                let url = URL.createObjectURL(file1)
-                // 设置给img
-                $('.article_cover').attr('src', url)
-            })
-
             // 获取所有的文章类别
             $.ajax({
                 type: 'get',
@@ -118,13 +108,27 @@
 
                 }
             })
+
+
+            //  预览图制作
+            // 找到选择图片按钮
+            $('#inputCover').on('change', function () {
+                // 获取用户输入的图片
+                let file1 = this.files[0]//转换dom元素
+                // 创建url地址
+                let url = URL.createObjectURL(file1)
+                // 设置给img
+                $('.article_cover').attr('src', url)
+            })
+
+
             // 编辑日历插件
             jeDate("#testico", {
-                zIndex: 2099,
-                isinitVal: true,
-                festival: false,
-                format: 'YYYY-MM-DD',
-                minDate: "2014-09-19 00:00:00"
+                zIndex: 22099,//弹出层的层级高度
+                isinitVal: false,//是否初始化时间，默认不初始化时间
+                format: 'YYYY-MM-DD',//日期格式
+                minDate: "2014-09-19 00:00:00",//最小日期 或者 "1900-01-01" 或者 "10:30:25"
+                isTime: true,//是否开启时间选择
             });
 
             // 富文本编辑器
@@ -132,6 +136,100 @@
             var editor = new E('#editor')
             // 或者 var editor = new E( document.getElementById('editor') )
             editor.create()
+
+
+
+            // 文章内容显示到编辑页
+            // 获取文章的id
+            let articleId = window.location.href.split('=')[1]
+            // console.log(articleId);
+            // 发送ajax请求,把内容显示到页面上
+            // 声明一个变量保存它本来的状态
+            // let articleStates = null
+            setTimeout(function () {
+                $.ajax({
+                    type: 'get',
+                    url: BigNew.article_search,
+                    data: {
+                        id: articleId
+                    },
+                    success: function (backData) {
+                        // console.log(backData);
+                        if (backData.code == 200) {
+                            $('#inputTitle').val(backData.data.title)//文章标题
+                            $('.article_cover').attr('src', backData.data.cover)//文章封面
+                            $('.category').val(backData.data.categoryId)//文章类型
+                            $('#testico').val(backData.data.date)//发布时间
+                            editor.txt.html(backData.data.content)//文章内容
+                            // articleStates = backData.data.state//用外面的变量保存文章状态
+                        }
+
+                    }
+                })
+            }, 0)
+
+            // 给修改按钮设置点击事件
+            $('.btn-edit').on('click', function (e) {
+                // 阻止默认跳转
+                e.preventDefault()
+                //利用FormData传数据
+                // 获取页面form表单
+                let form1 = $('#form')[0]
+                // 创建fd对象
+                let fd = new FormData(form1)
+                // 没有的数据通过append()添加,并且匹配表单中的name属性id,content,state需要添加
+                fd.append('id', articleId)//id传入href里面传过来的id
+                fd.append('content', editor.txt.html())//内容传富文本编辑器里面修改过的内容
+                fd.append('state', '已发布')//文章状态
+                // 发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.article_edit,
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        // console.log(backData)
+                        if (backData.code == 200) {
+                            alert('修改成功')
+                            //回退回去
+                            window.history.back();
+                        }
+                    }
+                })
+            })
+
+            // 存草稿按钮设置点击事件
+            $('.btn-draft').on('click', function (e) {
+                // 阻止默认跳转
+                e.preventDefault()
+                //利用FormData传数据
+                // 获取页面form表单
+                let form1 = $('#form')[0]
+                // 创建fd对象
+                let fd = new FormData(form1)
+                // 没有的数据通过append()添加,并且匹配表单中的name属性id,content,state需要添加
+                fd.append('id', articleId)//id传入href里面传过来的id
+                fd.append('content', editor.txt.html())//内容传富文本编辑器里面修改过的内容
+                fd.append('state', '草稿')//文章状态
+                // 发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.article_edit,
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        // console.log(backData)
+                        if (backData.code == 200) {
+                            alert('修改成功')
+                            //回退回去
+                            window.history.back();
+                        }
+                    }
+                })
+            })
+
 
 
 
