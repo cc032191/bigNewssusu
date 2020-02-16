@@ -310,10 +310,11 @@
                 }
             })
 
-
-
-
-
+            // 发表文章按钮触发点击事件
+            $('#release_btn').on('click', function () {
+                //$() :第一个参数：选择器  第二个参数：document，默认是当前窗口document
+                $('#one_b', window.parent.document).click()
+            })
         })
     </script>
 </body>
