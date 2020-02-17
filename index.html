@@ -273,7 +273,7 @@
     <!-- 焦点关注模块 -->
     <script id="attention_temp" type="text/html">
         {{each data v}}
-            <li><a href="{{v.id}}">{{v.intro}}</a></li>
+            <li><a href="./article.html?id={{v.id}}">{{v.intro}}</a></li>
         {{/each}}
     </script>
 
@@ -284,13 +284,13 @@
         {{/each}}
     </script>
 
-    <!-- 文章类别下拉菜单 -->
+    <!-- 文章类别下拉菜单
     <script id="category_temp" type="text/html">
         <li class="up"></li>
         {{each data v}}
         <li><a href="./list.html?id={{v.id}}">{{v.name}}</a></li>
         {{/each}}
-    </script>
+    </script> -->
 
 
     <script>
@@ -372,8 +372,8 @@
                         let resHtml = template('category_temp2', backData)
                         $('.left_menu').html(resHtml)
                         // 导航栏下拉菜单
-                        let resHtml1 = template('category_temp', backData)
-                        $('.level_two').html(resHtml1)
+                        // let resHtml1 = template('category_temp', backData)
+                        $('.level_two').html('<li class="up"></li>'+resHtml)
                     }
                 }
             })
@@ -388,7 +388,7 @@
                 if (textContent == '') {
                     alert('内容不能为空')
                     return
-                } elae(
+                } else(
                     window.location.href = './list.html?textContent=' + textContent
                 )
             })

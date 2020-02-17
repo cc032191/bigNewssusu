@@ -13,7 +13,7 @@
 
 <body>
     <div class="header">
-        <a href="#" class="logo fl"><img src="images/logo.png" alt="logo"></a>
+        <a href="./index.html" class="logo fl"><img src="images/logo.png" alt="logo"></a>
         <div class="search_form fl">
             <input type="text" class="search_txt" placeholder="黑洞照片">
             <button class="search_btn"><i class="fa fa-search"></i></button>
@@ -56,7 +56,7 @@
     <div class="main_con clearfix">
         <div class="left_con setfr">
             <div class="breadcrumb">
-                当前位置： <a href="#">首页</a> &gt; <a href="#">科技</a> &gt; 文章详情
+                当前位置： <a href="index.html">首页</a> &gt; <a href="#">科技</a> &gt; 文章详情
             </div>
             <h3 class="article_title">马斯克的新花样？连接人脑和电脑的初创公司又筹了一笔钱</h3>
             <div class="article_info">杰克 发布于 2019-05-08 07:08:46&nbsp;&nbsp;&nbsp;分类: 奇趣事&nbsp;&nbsp;&nbsp;阅读:
@@ -208,6 +208,226 @@
     <!-- 引入模板引擎js文件 -->
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
+
+
+
+    <!-- 评论模版 -->
+    <script id="com_list_temp" type="text/html">
+        {{each data v}}
+        <div class="comment_detail_list">
+            <div class="person_pic fl">{{v.author.substr(0,1)}}</div>
+            <div class="name_time fl"><b>{{v.author}}</b><span>{{v.date}}</span></div>
+            <div class="comment_text fl">{{v.content}}</div>
+        </div>
+        {{/each}}
+    </script>
+
+
+    <!-- 最新评论 -->
+    <script id="latestcomment_temp" type="text/html">
+            {{each data v}}
+            <li>
+                <span>{{v.author.substr(0,1)}}</span>
+                <b><em>{{v.author}}</em>{{v.date}}说:</b>
+                <strong>{{v.intro}}</strong>
+            </li>
+            {{/each}}
+        </script>
+
+
+    <!-- 焦点关注模块 -->
+    <script id="attention_temp" type="text/html">
+            {{each data v}}
+                <li><a href="./article.html?id={{v.id}}">{{v.intro}}</a></li>
+            {{/each}}
+        </script>
+
+    <!-- 文章类别 -->
+    <script id="category_temp2" type="text/html">
+            {{each data v}}
+            <li><a href="./list.html?id={{v.id}}">{{v.name}}</a></li>
+            {{/each}}
+        </script>
+
+    <script>
+        $(function () {
+            // 获取传过来的文章id 
+            let textId = window.location.search.split('=')[1]
+            // console.log(textId);
+            // 发送ajax请求显示在文章页面上
+            if (textId == null) {
+                // 如果没有id,则回到主页
+                window.location.href == './index.html'
+            } else {
+                $.ajax({
+                    type: 'get',
+                    url: 'http://localhost:8080/api/v1/index/article',
+                    data: {
+                        id: textId
+                    },
+                    success: function (backData) {
+                        // console.log(backData);
+                        // 内容渲染在页面上
+                        $('.breadcrumb').children('a').eq(1).attr('href', backData.data.cover).text(backData.data.category)
+                        $('.article_title').text(backData.data.title)
+                        $('.article_info').html(backData.data.author + ' 发布于 ' + backData.data.date + ' &nbsp;&nbsp;&nbsp; 分类: ' + backData.data.category + '&nbsp;&nbsp;&nbsp; 阅读: (' + backData.data.read + ') &nbsp;&nbsp;&nbsp; 评论: (' + backData.data.comments + ')')
+                        $('.article_con').html(backData.data.content)
+                        if (backData.data.prev != null) {
+                            $('.article_links>a').eq(0).text(backData.data.prev.title).attr('href', './article.html?id=' + backData.data.prev.id)
+                        } else (
+                            $('.article_links>a').eq(0).text('没有文章了').attr('href', '#')
+                        )
+                        if (backData.data.next != null) {
+                            $('.article_links>a').eq(1).text(backData.data.next.title).attr('href', './article.html?id=' + backData.data.next.id)
+                        } else (
+                            $('.article_links>a').eq(1).text('没有文章了').attr('href', '#')
+                        )
+                    }
+
+
+
+                })
+
+                // 详情页评论
+                // 有id就显示评论
+                $.ajax({
+                    type: 'get',
+                    url: 'http://localhost:8080/api/v1/index/get_comment',
+                    data: {
+                        articleId: textId
+                    },
+                    success: function (backData) {
+                        if (backData.code == 200) {
+                            let resHtml = template('com_list_temp', backData)
+                            $('.comment_list_con').html(resHtml)
+                            // 修改多少评论
+                            $('.comment_count').text(backData.data.length + '条评论')
+                        }
+                    }
+                })
+
+
+
+
+                //给评论按钮设置点击事件
+                $('.comment_sub').on('click', function (e) {
+                    // 阻止默认跳转
+                    e.preventDefault()
+                    // 获取用户名跟内容
+                    let author = $('.comment_name').val().trim()
+                    let content = $('.comment_input').val().trim()
+                    // 判断非空
+                    if (author == '' || content == '') {
+                        alert('内容不能为空')
+                        return
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/api/v1/index/post_comment',
+                        data: {
+                            author: author,
+                            content: content,
+                            articleId: textId
+                        },
+                        success: function (backData) {
+                            // console.log(backData)
+                            if (backData.code == 201) {
+                                alert('发布成功,待审核')
+                                $('.comment_name').val('')
+                                $('.comment_input').val('')
+                            }
+
+                        }
+                    })
+
+                })
+
+            }
+            // -------------------------------------------------------------------------------
+
+            // 热门排行
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/rank',
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        // 写for循环完成渲染
+                        for (let i = 0; i < backData.data.length; i++) {
+                            // $('.hotrank_list>li>a')[i].innerText = backData.data[i].title
+                            // $('.hotrank_list>li>a')[i].setAttribute('href', './article.html?id=' + backData.data[i].id)
+                            $('.content_list>li>a').eq(i).text(backData.data[i].title)
+                            $('.content_list>li>a').eq(i).attr('href', './article.html?id=' + backData.data[i].id)
+                        }
+                    }
+                }
+            })
+
+            // 最新评论
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/latest_comment',
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        let resHtml = template('latestcomment_temp', backData)
+                        $('.comment_list').html(resHtml)
+                    }
+                }
+            })
+
+            // 焦点关注
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/attention',
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        let resHtml = template('attention_temp', backData)
+                        $('.guanzhu_list').html(resHtml)
+                    }
+                }
+            })
+
+            // 文章类别
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/category',
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        // 导航栏
+                        let resHtml = template('category_temp2', backData)
+                        $('.left_menu').html(resHtml)
+                        // 导航栏下拉菜单
+                        // let resHtml1 = template('category_temp', backData)
+                        $('.level_two').html('<li class="up"></li>' + resHtml)
+                    }
+                }
+            })
+
+
+            // 文章搜索
+            // 给搜索按钮设置点击事件
+            $('.search_btn').on('click', function () {
+                //  获取输入框里面的内容
+                let textContent = $('.search_txt').val().trim()
+                // console.log(textContent);
+                if (textContent == '') {
+                    alert('内容不能为空')
+                    return
+                } else (
+                    window.location.href = './list.html?textContent=' + textContent
+                )
+            })
+
+            // 文本输入框键盘按下事件
+            $('.search_txt').on('keydown', function (e) {
+                if (e.keyCode == 13) {
+                    $('.search_btn').click()
+                }
+            })
+
+
+
+        })
+    </script>
 
 </body>
 
